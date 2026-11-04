@@ -98,6 +98,20 @@ body {
 #loginForm input, #registerForm input {
   width: 100%; min-height: 42px; padding: 10px 12px; border-radius: 10px; border: 1px solid #d4ddd8;
   background: rgba(240, 245, 243, 0.9); color: var(--fg); font-size: 0.92rem;
+  -webkit-text-fill-color: var(--fg);
+  caret-color: var(--fg);
+}
+#loginForm input:-webkit-autofill,
+#loginForm input:-webkit-autofill:hover,
+#loginForm input:-webkit-autofill:focus,
+#loginForm input:-webkit-autofill:active,
+#registerForm input:-webkit-autofill,
+#registerForm input:-webkit-autofill:hover,
+#registerForm input:-webkit-autofill:focus,
+#registerForm input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgba(240, 245, 243, 0.9) inset !important;
+  -webkit-text-fill-color: var(--fg) !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 #loginForm button, #registerForm button {
   margin-top: 4px; min-height: 44px; border-radius: 10px; font-size: 0.96rem; font-weight: 700;
@@ -138,8 +152,18 @@ label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--muted
 input[type="text"], input[type="number"], input[type="search"] {
   width: 100%; font: inherit; color: var(--fg); background: var(--surface-2); border: 1px solid var(--line);
   border-radius: 8px; padding: 10px 12px; min-height: 42px;
+  -webkit-text-fill-color: var(--fg);
+  caret-color: var(--fg);
 }
 input.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--surface-2) inset !important;
+  -webkit-text-fill-color: var(--fg) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
 input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .form-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1.2fr) minmax(0, 0.8fr); gap: 10px; }
 .item-name-wrap { position: relative; }

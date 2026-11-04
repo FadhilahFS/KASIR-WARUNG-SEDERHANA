@@ -54,6 +54,30 @@
   function normalizeStoreUsername(value) {
     return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "warung";
   }
+  function ensureDefaultAccounts() {
+    var accounts = getAccounts();
+    var defaultAccounts = [
+      { name: "Warung Maju", username: "warung-maju", password: "12345" },
+      { name: "Paras Chips", username: "paras-chips", password: "12345" }
+    ];
+    var map = {};
+    accounts.forEach(function (acc) {
+      map[String(acc && acc.username || "").toLowerCase()] = true;
+    });
+    defaultAccounts.forEach(function (item) {
+      var key = String(item.username).toLowerCase();
+      if (!map[key]) {
+        accounts.push({
+          id: "store-demo-" + key + "-" + Date.now(),
+          name: item.name,
+          username: item.username,
+          password: item.password
+        });
+        map[key] = true;
+      }
+    });
+    localStorage.setItem("kasir.accounts", JSON.stringify(accounts));
+  }
   function findAccount(username, password) {
     var accounts = getAccounts();
     return accounts.find(function (acc) {
@@ -78,6 +102,7 @@
     localStorage.setItem("kasir.accounts", JSON.stringify(accounts));
     return account;
   }
+  ensureDefaultAccounts();
   function loginToStore(account) {
     currentStore = account;
     localStorage.setItem("kasir.currentStore", JSON.stringify({ id: account.id, username: account.username }));

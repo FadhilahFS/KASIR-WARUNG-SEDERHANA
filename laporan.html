@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Laporan</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap page-shell">
+    <header class="top page-header-card">
+      <div>
+        <h1>Laporan & Export</h1>
+        <p class="sub">Ringkasan penjualan dan ekspor ke Excel.</p>
+      </div>
+      <div class="today page-header-actions">
+        <button type="button" class="primary" id="exportLaporan">Export Excel</button>
+        <button type="button" class="theme-btn" id="backToKasir">Kembali ke kasir</button>
+      </div>
+    </header>
+
+    <main class="panel page-panel">
+      <div class="chips" id="reportTabs" role="group" aria-label="Jenis laporan">
+        <button type="button" data-r="Harian" aria-pressed="true">Harian</button>
+        <button type="button" data-r="Mingguan" aria-pressed="false">Mingguan</button>
+        <button type="button" data-r="Bulanan" aria-pressed="false">Bulanan</button>
+      </div>
+
+      <div class="rep-wrap">
+        <table class="rep" id="repTable"></table>
+      </div>
+      <p class="hint" id="repNote">Belum ada transaksi.</p>
+      <p class="status" id="expStatus" role="status"></p>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      function getCurrentStore() {
+        try { return JSON.parse(localStorage.getItem('kasir.currentStore') || 'null'); }
+        catch (e) { return null; }
+      }
+      function storeAwareKey(key) {
+        var store = getCurrentStore();
+        if (!store || !store.id) return key;
+        return 'kasir.store.' + store.id + '.' + String(key).replace(/^kasir\./, '');
+      }
+      function load(key, fallback) {
+        try {
+          var value = localStorage.getItem(storeAwareKey(key));
+          return value ? JSON.parse(value) : fallback;
+        } catch (e) { return fallback; }
+      }
+      function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+      function fmt(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Number(n || 0))); }
+      function p2(n) { return ('0' + n).slice(-2); }
+      function ymd(d) { return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
+      function qtyOf(t) { return (t.items || []).reduce(function (sum, item) { return sum + (Number(item.qty) || 0); }, 0); }
+      var history = Array.isArray(load('kasir.history', [])) ? load('kasir.history', []) : [];
+      var reportKind = 'Harian';
+      var repTable = document.getElementById('repTable');
+      var repNote = document.getElementById('repNote');
+      var expStatus = document.getElementById('expStatus');
+      var tabs = document.getElementById('reportTabs');
+      var backBtn = document.getElementById('backToKasir');
+      var exportBtn = document.getElementById('exportLaporan');
+
+      function periodMeta(kind, d) {
+        if (kind === 'Harian') {
+          return { key: ymd(d), disp: d.toLocaleDateString('id-ID', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) };
+        }
+        if (kind === 'Mingguan') {
+          var mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7));
+          var sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+          var year = mon.getFullYear();
+          var jan4 = new Date(year, 0, 4);
+          var w1 = new Date(year, 0, 4 - ((jan4.getDay() + 6) % 7));
+          var wk = Math.round((mon - w1) / 604800000) + 1;
+          return { key: ymd(mon), disp: 'Minggu ' + year + '-W' + p2(wk) };
+        }
+        return { key: d.getFullYear() + '-' + p2(d.getMonth() + 1), disp: d.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) };
+      }
+      function aggregate(kind) {
+        var map = {};
+        history.forEach(function (t) {
+          var m = periodMeta(kind, new Date(t.time));
+          var bucket = map[m.key] || (map[m.key] = { key: m.key, label: m.disp, n: 0, qty: 0, total: 0, tunai: 0, qris: 0, transfer: 0 });
+          bucket.n += 1; bucket.qty += qtyOf(t); bucket.total += Number(t.total) || 0;
+          bucket[t.method] = (bucket[t.method] || 0) + (Number(t.total) || 0);
+        });
+        return Object.keys(map).sort().map(function (key) { return map[key]; });
+      }
+      function renderReport() {
+        var rows = aggregate(reportKind);
+        if (!rows.length) {
+          repTable.innerHTML = '';
+          repNote.textContent = 'Belum ada transaksi untuk dilaporkan.';
+          return;
+        }
+        var html = '<thead><tr><th>Periode</th><th class="num">Trx</th><th class="num">Barang</th><th class="num">Total</th><th class="num">Tunai</th><th class="num">QRIS</th><th class="num">Transfer</th></tr></thead><tbody>';
+        rows.forEach(function (row) {
+          html += '<tr>' +
+            '<td>' + esc(row.label) + '</td>' +
+            '<td class="num">' + row.n + '</td>' +
+            '<td class="num">' + row.qty + '</td>' +
+            '<td class="num">' + fmt(row.total) + '</td>' +
+            '<td class="num">' + fmt(row.tunai || 0) + '</td>' +
+            '<td class="num">' + fmt(row.qris || 0) + '</td>' +
+            '<td class="num">' + fmt(row.transfer || 0) + '</td>' +
+            '</tr>';
+        });
+        html += '</tbody>';
+        repTable.innerHTML = html;
+        repNote.textContent = 'Laporan ' + reportKind.toLowerCase() + ' aktif.';
+      }
+      function exportExcel() {
+        if (typeof XLSX === 'undefined') {
+          expStatus.textContent = 'Library Excel belum siap.';
+          return;
+        }
+        var rows = [['Periode', 'Jumlah transaksi', 'Barang terjual', 'Total pendapatan (Rp)', 'Tunai', 'QRIS', 'Transfer']];
+        aggregate(reportKind).forEach(function (row) {
+          rows.push([row.label, row.n, row.qty, row.total, row.tunai || 0, row.qris || 0, row.transfer || 0]);
+        });
+        var wb = XLSX.utils.book_new();
+        var ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols'] = [{wch: 24}, {wch: 18}, {wch: 18}, {wch: 22}, {wch: 18}, {wch: 18}, {wch: 18}];
+        XLSX.utils.book_append_sheet(wb, ws, reportKind);
+        XLSX.writeFile(wb, 'laporan-' + reportKind.toLowerCase() + '-' + new Date().toISOString().slice(0, 10) + '.xlsx');
+        expStatus.textContent = 'File Excel berhasil diunduh.';
+      }
+
+      tabs.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-r]');
+        if (!button) return;
+        reportKind = button.dataset.r;
+        tabs.querySelectorAll('[data-r]').forEach(function (item) {
+          item.setAttribute('aria-pressed', item === button ? 'true' : 'false');
+        });
+        renderReport();
+      });
+      backBtn.addEventListener('click', function () { window.location.href = 'Kasir Warung.html'; });
+      if (exportBtn) exportBtn.addEventListener('click', exportExcel);
+      renderReport();
+    })();
+  </script>
+</body>
+</html>

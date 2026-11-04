@@ -197,10 +197,13 @@
         setStatus('File Excel stok gudang berhasil dibuat.');
       }
 
-      backBtn.addEventListener('click', function () { window.location.href = 'Kasir Warung.html'; });
+      backBtn.addEventListener('click', function () { window.location.href = 'index.html'; });
       if (exportBtn) exportBtn.addEventListener('click', exportExcel);
       renderPantry();
       setStatus('Data stok tersimpan per toko dan perangkat.');
+      requestAnimationFrame(function () {
+        document.body.classList.add('page-ready');
+      });
     })();
   </script>
 </body>

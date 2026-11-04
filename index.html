@@ -108,7 +108,6 @@
               <div class="f-name"><label for="mName">Nama menu</label><input type="text" id="mName" placeholder="mis. Cappuccino" maxlength="40"></div>
               <div><label for="mPrice">Harga (Rp)</label><input type="text" class="mono" id="mPrice" inputmode="numeric" placeholder="20000"></div>
               <div><label for="mCat">Kategori</label><select id="mCat"><option>Makanan</option><option selected>Minuman</option><option>Camilan</option></select></div>
-              <div><label for="mStock">Stok</label><input type="number" class="mono" id="mStock" value="0" min="0" max="9999"></div>
             </div>
             <div class="form-actions" style="justify-content:flex-end">
               <button type="submit" class="primary">Simpan menu</button>
@@ -256,6 +255,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      requestAnimationFrame(function () {
+        document.body.classList.add('page-ready');
+      });
+    });
+  </script>
   <script src="script.js" defer></script>
 </body>
 </html>

@@ -215,8 +215,7 @@
       menu.forEach(function (m, i) {
         if (m.cat !== cat) return;
         n++;
-        var stockText = (typeof m.stock === "number" && isFinite(m.stock)) ? ' <small class="stock-badge">Stok: ' + m.stock + '</small>' : '';
-        cards += '<div class="menu-wrap"><button type="button" class="menu-item" data-add="' + i + '"><i class="av" style="--h:' + CAT_HUE[cat] + '">' + esc(m.name.charAt(0).toUpperCase()) + '</i><span>' + esc(m.name) + '</span><em>' + rp(m.price) + '</em>' + stockText + '</button></div>';
+        cards += '<div class="menu-wrap"><button type="button" class="menu-item" data-add="' + i + '"><i class="av" style="--h:' + CAT_HUE[cat] + '">' + esc(m.name.charAt(0).toUpperCase()) + '</i><span>' + esc(m.name) + '</span><em>' + rp(m.price) + '</em></button></div>';
       });
       return '<div class="menu-sec"><h3 class="menu-cat"><span class="dot" style="--h:' + CAT_HUE[cat] + '"></span>' + cat + '<span class="n">' + n + '</span></h3>' +
         (n ? '<div class="menu-grid">' + cards + '</div>' : '<p class="hint" style="margin:0">Belum ada menu di kategori ini.</p>') + '</div>';
@@ -755,13 +754,13 @@
   });
   $("menuForm").addEventListener("submit", function (e) {
     e.preventDefault();
-    var name = $("mName").value.trim(), price = num($("mPrice").value), cat = $("mCat").value, stock = parseInt($("mStock").value, 10) || 0;
+    var name = $("mName").value.trim(), price = num($("mPrice").value), cat = $("mCat").value;
     if (!name) { $("menuErr").textContent = "Isi nama menu dulu."; $("mName").focus(); return; }
     if (price <= 0) { $("menuErr").textContent = "Isi harga dengan angka lebih dari 0."; $("mPrice").focus(); return; }
     if (menu.some(function (m) { return m.name.toLowerCase() === name.toLowerCase(); })) { $("menuErr").textContent = "Menu dengan nama itu sudah ada."; return; }
     $("menuErr").textContent = "";
-    menu.push({ name: name, price: price, cat: cat, stock: stock }); save("kasir.menu", menu); renderMenu(); renderManage(); toast(name + " disimpan di " + cat);
-    $("mName").value = ""; $("mPrice").value = ""; $("mStock").value = 0; $("mName").focus();
+    menu.push({ name: name, price: price, cat: cat }); save("kasir.menu", menu); renderMenu(); renderManage(); toast(name + " disimpan di " + cat);
+    $("mName").value = ""; $("mPrice").value = ""; $("mName").focus();
   });
   $("mPrice").addEventListener("input", function () { var n = num(this.value); this.value = n ? fmt.format(n) : ""; });
   $("inPrice").addEventListener("input", function () { var n = num(this.value); this.value = n ? fmt.format(n) : ""; });
@@ -839,14 +838,12 @@
         h += '<li class="mrow editing"><div class="medit">' +
           '<div class="f-name"><label for="eName">Nama</label><input type="text" id="eName" maxlength="40" value="' + esc(m.name) + '"></div>' +
           '<div><label for="ePrice">Harga (Rp)</label><input type="text" class="mono" id="ePrice" inputmode="numeric" value="' + fmt.format(m.price) + '"></div>' +
-          '<div><label for="eCat">Kategori</label><select id="eCat">' + CATS.map(function (c) { return "<option" + (c === m.cat ? " selected" : "") + ">" + c + "</option>"; }).join("") + '</select></div>' +
-          '<div><label for="eStock">Stok</label><input type="number" class="mono" id="eStock" min="0" value="' + (typeof m.stock === "number" && isFinite(m.stock) ? m.stock : 0) + '"></div></div>' +
+          '<div><label for="eCat">Kategori</label><select id="eCat">' + CATS.map(function (c) { return "<option" + (c === m.cat ? " selected" : "") + ">" + c + "</option>"; }).join("") + '</select></div></div>' +
           '<p class="err" id="eErr" role="alert"></p>' +
           '<div class="row-actions" style="margin-top:6px"><button type="button" class="small primary" data-save="' + i + '">Simpan</button><button type="button" class="small" data-cancel="1">Batal</button></div></li>';
       } else {
         h += '<li class="mrow"><span class="dot" style="--h:' + CAT_HUE[m.cat] + '"></span><div class="minfo"><b>' + esc(m.name) + '</b><small>' + m.cat + '</small></div>' +
           '<span class="mprice">' + rp(m.price) + '</span>' +
-          '<span class="mprice">Stok: ' + (typeof m.stock === "number" && isFinite(m.stock) ? m.stock : 0) + '</span>' +
           '<div class="mbtns"><button type="button" class="small" data-edit="' + i + '">Edit</button><button type="button" class="small ghost danger" data-rm="' + i + '">Hapus</button></div></li>';
       }
     });
@@ -864,11 +861,11 @@
     } else if (b.dataset.cancel != null) {
       editIdx = -1; renderManage();
     } else if (b.dataset.save != null) {
-      var i = +b.dataset.save, name = $("eName").value.trim(), price = num($("ePrice").value), cat = $("eCat").value, stock = Math.max(0, parseInt($("eStock").value, 10) || 0);
+      var i = +b.dataset.save, name = $("eName").value.trim(), price = num($("ePrice").value), cat = $("eCat").value;
       if (!name) { $("eErr").textContent = "Isi nama menu dulu."; return; }
       if (price <= 0) { $("eErr").textContent = "Isi harga dengan angka lebih dari 0."; return; }
       if (menu.some(function (m, j) { return j !== i && m.name.toLowerCase() === name.toLowerCase(); })) { $("eErr").textContent = "Menu dengan nama itu sudah ada."; return; }
-      menu[i] = { name: name, price: price, cat: cat, stock: stock }; save("kasir.menu", menu);
+      menu[i] = { name: name, price: price, cat: cat }; save("kasir.menu", menu);
       editIdx = -1; renderMenu(); renderManage(); toast(name + " diperbarui");
     } else if (b.dataset.rm != null) {
       var k = +b.dataset.rm;
@@ -940,13 +937,20 @@
         disp: d.toLocaleDateString("id-ID", { weekday: "short", day: "2-digit", month: "short", year: "numeric" }) };
     }
     if (kind === "Mingguan") {
-      var mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7));
-      var sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
-      var thu = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 3), yr = thu.getFullYear();
-      var j4 = new Date(yr, 0, 4), w1 = new Date(yr, 0, 4 - ((j4.getDay() + 6) % 7));
-      var wk = Math.round((mon - w1) / 604800000) + 1;
-      return { key: ymd(mon), cols: [yr + "-W" + p2(wk), ymd(mon), ymd(sun)],
-        disp: "Senin " + dshort(mon) + " – Minggu " + dshort(sun) + " " + sun.getFullYear() };
+      var year = d.getFullYear();
+      var month = d.getMonth();
+      var day = d.getDate();
+      var week = day <= 7 ? 1 : day <= 14 ? 2 : day <= 21 ? 3 : 4;
+      var firstDay = 1 + ((week - 1) * 7);
+      var lastDay = week === 4 ? new Date(year, month + 1, 0).getDate() : firstDay + 6;
+      var start = new Date(year, month, firstDay);
+      var end = new Date(year, month, lastDay);
+      var key = year + "-" + p2(month + 1) + "-W" + p2(week);
+      return {
+        key: key,
+        cols: ["Minggu " + week + " " + start.toLocaleDateString("id-ID", { month: "short", year: "numeric" }), ymd(start), ymd(end)],
+        disp: "Minggu " + week + " " + start.toLocaleDateString("id-ID", { month: "short", year: "numeric" }) + " (" + start.toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) + " - " + end.toLocaleDateString("id-ID", { day: "2-digit", month: "short" }) + ")"
+      };
     }
     var nm = d.toLocaleDateString("id-ID", { month: "long", year: "numeric" }), mk = d.getFullYear() + "-" + p2(d.getMonth() + 1);
     return { key: mk, cols: [mk, nm], disp: nm };

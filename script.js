@@ -10,7 +10,15 @@
     return "kasir.store." + currentStore.id + "." + String(k).replace(/^kasir\./, "");
   }
   function load(k, d) { try { var v = localStorage.getItem(storeAwareKey(k)); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
-  function save(k, v) { try { localStorage.setItem(storeAwareKey(k), JSON.stringify(v)); } catch (e) {} }
+  function save(k, v) {
+    try {
+      var key = storeAwareKey(k);
+      localStorage.setItem(key, JSON.stringify(v));
+      return localStorage.getItem(key) === JSON.stringify(v);
+    } catch (e) {
+      return false;
+    }
+  }
   function esc(s) { return String(s).replace(/[&<>\"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
 
   function getAccounts() {
@@ -161,6 +169,11 @@
   var history = load("kasir.history", []);
   var cart = [];
   var lastReceiptText = "";
+
+  function persistMenu() {
+    if (!currentStore) return false;
+    return save("kasir.menu", menu);
+  }
 
   function refreshStoreData() {
     if (!currentStore) return;
@@ -759,7 +772,13 @@
     if (price <= 0) { $("menuErr").textContent = "Isi harga dengan angka lebih dari 0."; $("mPrice").focus(); return; }
     if (menu.some(function (m) { return m.name.toLowerCase() === name.toLowerCase(); })) { $("menuErr").textContent = "Menu dengan nama itu sudah ada."; return; }
     $("menuErr").textContent = "";
-    menu.push({ name: name, price: price, cat: cat }); save("kasir.menu", menu); renderMenu(); renderManage(); toast(name + " disimpan di " + cat);
+    menu.push({ name: name, price: price, cat: cat });
+    if (!persistMenu()) {
+      menu.pop();
+      $("menuErr").textContent = "Menu gagal disimpan. Penyimpanan browser penuh atau sedang diblokir.";
+      return;
+    }
+    renderMenu(); renderManage(); toast(name + " disimpan di " + cat);
     $("mName").value = ""; $("mPrice").value = ""; $("mName").focus();
   });
   $("mPrice").addEventListener("input", function () { var n = num(this.value); this.value = n ? fmt.format(n) : ""; });

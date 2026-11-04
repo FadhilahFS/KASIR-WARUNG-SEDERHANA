@@ -75,18 +75,19 @@ body {
   display: flex; flex-direction: column; justify-content: center; gap: 14px;
 }
 .auth-tabs {
-  display: flex; gap: 8px; background: rgba(17, 48, 40, 0.04); border: 1px solid rgba(17, 48, 40, 0.08);
+  display: flex; gap: 8px; background: rgba(17, 48, 40, 0.05); border: 1px solid rgba(17, 48, 40, 0.10);
   border-radius: 12px; padding: 4px;
 }
 .auth-tab {
-  flex: 1; border: 0; background: transparent; color: var(--muted); border-radius: 10px; min-height: 38px; font-weight: 700;
+  flex: 1; border: 0; background: transparent; color: #526b66; border-radius: 10px; min-height: 38px; font-weight: 700;
 }
 .auth-tab.active {
-  background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgba(17, 48, 40, 0.08);
+  background: #1f2d2a; color: #ffffff; box-shadow: 0 2px 8px rgba(17, 48, 40, 0.18);
 }
 .auth-form {
   display: flex; flex-direction: column; gap: 10px;
-  background: rgba(255,255,255,0.5); border: 1px solid rgba(17, 48, 40, 0.08); border-radius: 16px; padding: 16px 14px;
+  background: rgba(255,255,255,0.72); border: 1px solid rgba(17, 48, 40, 0.08); border-radius: 16px; padding: 16px 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.45);
 }
 .auth-form[hidden] { display: none; }
 #registerForm h3 {
@@ -96,14 +97,18 @@ body {
   display: block; font-size: 0.75rem; font-weight: 700; color: #23463d; margin-bottom: 2px;
 }
 #loginForm input, #registerForm input {
-  width: 100%; min-height: 42px; padding: 10px 12px; border-radius: 10px; border: 1px solid #86a29b;
-  background: #ffffff; color: #0f1d1a; font-size: 0.92rem;
-  -webkit-text-fill-color: #0f1d1a;
-  caret-color: #0f1d1a;
-  box-shadow: inset 0 1px 2px rgba(15, 29, 26, 0.06);
+  width: 100%; min-height: 42px; padding: 10px 12px; border-radius: 10px; border: 1px solid #7fa9a0;
+  background: #ffffff; color: #0d1b18; font-size: 0.96rem; font-weight: 500;
+  -webkit-text-fill-color: #0d1b18;
+  caret-color: #0d1b18;
+  box-shadow: inset 0 1px 3px rgba(10, 26, 22, 0.06);
+}
+#loginForm input:focus, #registerForm input:focus {
+  border-color: #1aa38d; box-shadow: 0 0 0 4px rgba(26, 163, 141, 0.12), inset 0 1px 3px rgba(10, 26, 22, 0.06);
+  outline: none;
 }
 #loginForm input::placeholder, #registerForm input::placeholder {
-  color: #607772; opacity: 1;
+  color: #6e7f7a; opacity: 1;
 }
 #loginForm input:-webkit-autofill,
 #loginForm input:-webkit-autofill:hover,
@@ -114,11 +119,19 @@ body {
 #registerForm input:-webkit-autofill:focus,
 #registerForm input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
-  -webkit-text-fill-color: #0f1d1a !important;
+  -webkit-text-fill-color: #0d1b18 !important;
   transition: background-color 5000s ease-in-out 0s;
 }
 #loginForm button, #registerForm button {
   margin-top: 4px; min-height: 44px; border-radius: 10px; font-size: 0.96rem; font-weight: 700;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+}
+#loginForm button.primary, #registerForm button.primary {
+  background: linear-gradient(180deg, #4fcdb5 0%, #2ab39d 100%);
+  border-color: #2ab39d; color: #0b2d28; box-shadow: 0 8px 18px -14px rgba(30, 140, 117, 0.85);
+}
+#loginForm button.primary:hover, #registerForm button.primary:hover {
+  transform: translateY(-1px);
 }
 #registerForm button.ghost {
   background: #f3f7f5; border-color: rgba(13, 110, 93, 0.2); color: #1b2d29;
